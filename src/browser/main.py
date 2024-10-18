@@ -12,7 +12,6 @@ class URL:
         if self.scheme == "file":
             self.path = url
         elif self.scheme == "data":
-            print(url)
             self.data_mime_type, self.data_content = url.split(",", 1)
         else:
             if self.scheme == "http":
@@ -101,13 +100,28 @@ class URL:
 
 def show(body: str):
     in_tag = False
+    entity = None
+
+    entities = {
+        "&lt;": "<",
+        "&gt;": ">",
+    }
     for c in body:
         if c == "<":
             in_tag = True
         elif c == ">":
             in_tag = False
         elif not in_tag:
-            print(c, end="")
+            if c == "&":
+                entity = c
+            elif entity:
+                entity += c
+                if c == ";":
+                    entity = entities.get(entity, entity)
+                    print(entity, end="")
+                    entity = None
+            else:
+                print(c, end="")
 
 
 def load(url: URL):
