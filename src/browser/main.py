@@ -3,11 +3,17 @@ from shutil import which
 
 class URL:
     def __init__(self, url: str):
-        self.scheme, url = url.split("://", 1)
-        assert self.scheme in ["http", "https", "file"]
+        if url.startswith("data:"):
+            self.scheme, url = url.split(":", 1)
+        else:
+            self.scheme, url = url.split("://", 1)
+            assert self.scheme in ["http", "https", "file"]
 
         if self.scheme == "file":
             self.path = url
+        elif self.scheme == "data":
+            print(url)
+            self.data_mime_type, self.data_content = url.split(",", 1)
         else:
             if self.scheme == "http":
                 self.port = 80
@@ -30,6 +36,8 @@ class URL:
     def request(self, headers=None) -> str:
         if self.scheme == "file":
             return self._file_request()
+        elif self.scheme == "data":
+            return self.data_content
         else:
             return self._socket_request(headers)
 
