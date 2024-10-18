@@ -4,27 +4,40 @@ from shutil import which
 class URL:
     def __init__(self, url: str):
         self.scheme, url = url.split("://", 1)
-        assert self.scheme in ["http", "https"]
+        assert self.scheme in ["http", "https", "file"]
 
-        if self.scheme == "http":
-            self.port = 80
+        if self.scheme == "file":
+            self.path = url
         else:
-            self.port = 443
+            if self.scheme == "http":
+                self.port = 80
+            else:
+                self.port = 443
 
-        if "/" not in url:
-            url += "/"
+            if "/" not in url:
+                url += "/"
 
-        self.host, url = url.split("/", 1)
-        if ":" in self.host:
-            self.host, port = self.host.split(":", 1)
-            self.port = int(port)
+            self.host, url = url.split("/", 1)
+            if ":" in self.host:
+                self.host, port = self.host.split(":", 1)
+                self.port = int(port)
 
-        self.path = "/" + url
+            self.path = "/" + url
 
     def __str__(self):
         return f"{self.scheme}://{self.host}{self.path}"
 
     def request(self, headers=None) -> str:
+        if self.scheme == "file":
+            return self._file_request()
+        else:
+            return self._socket_request(headers)
+
+    def _file_request(self) -> str:
+        with open(self.path, "r") as f:
+            return f.read()
+
+    def _socket_request(self, headers=None) -> str:
         import socket
 
         request_headers = {
