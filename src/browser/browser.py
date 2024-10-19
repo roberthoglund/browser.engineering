@@ -21,6 +21,9 @@ class Browser:
 
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
+        # TODO: Add support for <Mousewheel> on MacOS
+        self.window.bind("<Button-4>", self.scrolldown)
+        self.window.bind("<Button-5>", self.scrollup)
 
     def load(self, url: URL):
         body = url.request()
