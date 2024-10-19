@@ -1,8 +1,9 @@
-from shutil import which
-
-
 class URL:
     def __init__(self, url: str):
+        self.view_source = False
+        if url.startswith("view-source:"):
+            _, url = url.split(":", 1)
+            self.view_source = True
         if url.startswith("data:"):
             self.scheme, url = url.split(":", 1)
         else:
@@ -98,7 +99,11 @@ class URL:
         return content
 
 
-def show(body: str):
+def show(body: str, view_source: bool = False):
+    if view_source:
+        print(body)
+        return
+
     in_tag = False
     entity = None
 
@@ -126,7 +131,7 @@ def show(body: str):
 
 def load(url: URL):
     body = url.request()
-    show(body)
+    show(body, view_source=url.view_source)
 
 
 if __name__ == "__main__":
