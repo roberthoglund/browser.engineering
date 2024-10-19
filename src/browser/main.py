@@ -17,3 +17,7 @@ def start():
 
     Browser().load(URL(sys.argv[1], version=get_version()))
     tkinter.mainloop()
+
+
+if __name__ == "__main__":
+    start()
