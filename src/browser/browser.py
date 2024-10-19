@@ -8,6 +8,7 @@ WIDTH, HEIGHT = 800, 600
 H_STEP, V_STEP = 13, 18
 SCROLL_STEP = 100
 
+
 class Browser:
     def __init__(self):
         self.scroll = 0
@@ -19,6 +20,7 @@ class Browser:
         self.canvas.pack()
 
         self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Up>", self.scrollup)
 
     def load(self, url: URL):
         body = url.request()
@@ -37,4 +39,10 @@ class Browser:
 
     def scrolldown(self, e):
         self.scroll += SCROLL_STEP
+        self.draw()
+
+    def scrollup(self, e):
+        self.scroll -= SCROLL_STEP
+        if self.scroll < 0:
+            self.scroll = 0
         self.draw()
