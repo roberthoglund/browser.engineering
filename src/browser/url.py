@@ -1,5 +1,6 @@
 class URL:
-    def __init__(self, url: str):
+    def __init__(self, url: str, version: str):
+        self.version = version
         self.view_source = False
         if url.startswith("view-source:"):
             _, url = url.split(":", 1)
@@ -51,7 +52,7 @@ class URL:
         request_headers = {
             "Host": self.host,
             "Connection": "close",
-            "User-Agent": "browser.engineering/0.1",
+            "User-Agent": f"browser.engineering/{self.version}",
         }
 
         if headers:
