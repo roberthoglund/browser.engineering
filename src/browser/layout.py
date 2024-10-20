@@ -1,5 +1,4 @@
 import tkinter
-from shutil import which
 
 from browser.lex import Text
 
@@ -72,6 +71,23 @@ class Layout:
         font = get_font(self.size, self.weight, self.style)
         w = font.measure(word)
         if self.cursor_x + w > self.width - H_STEP:
+            # Simple handling of soft hyphens.
+            if "\u00AD" in word:
+                word_tokens = word.split("\u00AD")
+                split_pos = -1
+                for i in range(len(word_tokens)):
+                    broken_word = "\u00AD".join(word_tokens[:i]) + "\u00AD"
+                    broken_word_w = font.measure(broken_word)
+                    if self.cursor_x + broken_word_w > self.width - H_STEP:
+                        split_pos = i - 1
+                        break
+
+                if split_pos > -1:
+                    self.word("\u00AD".join(word_tokens[:split_pos]) + "\u00AD")
+                    self.flush()
+                    self.word("\u00AD".join(word_tokens[split_pos:]))
+                    return
+
             self.flush()
         self.line.append((self.cursor_x, word, font, w))
         self.cursor_x += w + font.measure(" ")
