@@ -43,7 +43,7 @@ def lex(body: str, view_source: bool = False):
             out.append(Tag(buffer))
             buffer = ""
         else:
-            if c == "&":
+            if c == "&" and not in_tag:
                 entity = c
             elif entity:
                 entity += c
