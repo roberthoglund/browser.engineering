@@ -145,6 +145,8 @@ class BlockLayout:
         if mode == "block":
             previous = None
             for child in self.node.children:
+                if isinstance(child, Element) and child.tag == "head":
+                    continue
                 next_node = BlockLayout(child, self, previous)
                 self.children.append(next_node)
                 previous = next_node

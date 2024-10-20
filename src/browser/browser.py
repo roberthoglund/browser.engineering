@@ -58,7 +58,6 @@ class Browser:
     def update(self):
         self.document = DocumentLayout(self.nodes, self.width)
         self.document.layout()
-        print_tree(self.document)
         self.display_list = []
         paint_tree(self.document, self.display_list)
         self.draw()
