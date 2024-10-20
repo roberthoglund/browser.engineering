@@ -1,5 +1,8 @@
 import importlib.metadata
 import tkinter
+
+
+from browser.parser import HTMLParser, print_tree
 from .browser import Browser
 from .url import URL
 

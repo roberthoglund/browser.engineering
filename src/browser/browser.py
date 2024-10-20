@@ -3,7 +3,7 @@ import tkinter.font
 from tkinter import BOTH
 
 from .layout import Layout, V_STEP
-from .lex import lex
+from .parser import HTMLParser, print_tree
 from .url import URL
 
 WIDTH, HEIGHT = 800, 600
@@ -16,7 +16,7 @@ class Browser:
         self.width = WIDTH
         self.height = HEIGHT
 
-        self.tokens = []
+        self.nodes = None
         self.display_list = []
 
         self.window = tkinter.Tk()
@@ -44,11 +44,12 @@ class Browser:
 
     def load(self, url: URL):
         body = url.request()
-        self.tokens = lex(body, url.view_source)
+        self.nodes = HTMLParser(body).parse()
+        # print_tree(self.nodes)
         self.update()
 
     def update(self):
-        self.display_list = Layout(self.tokens, self.width).display_list
+        self.display_list = Layout(self.nodes, self.width).display_list
         self.draw()
 
     def draw(self):

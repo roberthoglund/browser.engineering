@@ -1,6 +1,6 @@
 import tkinter
 
-from browser.lex import Text
+from browser.parser import Text
 
 H_STEP, V_STEP = 13, 18
 
@@ -17,7 +17,7 @@ def get_font(size, weight, style):
 
 
 class Layout:
-    def __init__(self, tokens, width: int):
+    def __init__(self, tree, width: int):
         self.display_list = []
         self.line = []
         self.cursor_x = H_STEP
@@ -28,44 +28,56 @@ class Layout:
         self.width = width
         self.center = False
 
-        for tok in tokens:
-            self.token(tok)
+        self.recurse(tree)
         self.flush()
 
-    def token(self, tok):
-        if isinstance(tok, Text):
-            for word in tok.text.split():
+    def recurse(self, tree):
+        if isinstance(tree, Text):
+            for word in tree.text.split():
                 self.word(word)
-        elif tok.tag == "i":
+        else:
+            self.open_tag(tree)
+            for child in tree.children:
+                self.recurse(child)
+            self.close(tree)
+
+    def open_tag(self, tag):
+        tag, attr = tag.tag, tag.attributes
+        if tag == "i":
             self.style = "italic"
-        elif tok.tag == "/i":
-            self.style = "roman"
-        elif tok.tag == "b":
+        elif tag == "b":
             self.weight = "bold"
-        elif tok.tag == "/b":
-            self.weight = "normal"
-        elif tok.tag == "small":
+        elif tag == "small":
             self.size -= 2
-        elif tok.tag == "/small":
-            self.size += 2
-        elif tok.tag == "big":
+        elif tag == "big":
             self.size += 4
-        elif tok.tag == "/big":
+            self.cursor_y += V_STEP
+        elif tag == "br":
+            self.flush()
+        elif tag.startswith("h1"):
+            self.flush()
+            if "class" in attr:
+                self.center = "title" == attr["class"]
+            self.size += 8
+
+    def close(self, tag):
+        tag, attr = tag.tag, tag.attributes
+        if tag == "i":
+            self.style = "roman"
+        elif tag == "b":
+            self.weight = "normal"
+        elif tag == "small":
+            self.size += 2
+        elif tag == "big":
             self.size -= 4
-        elif tok.tag == "/p":
+        elif tag == "p":
             self.flush()
             self.cursor_y += V_STEP
-        elif tok.tag == "br":
-            self.flush()
-        elif tok.tag.startswith("h1"):
-            self.flush()
-            if 'class="title"' in tok.tag:
-                self.center = True
-            self.size += 8
-        elif tok.tag == "/h1":
+        elif tag == "h1":
             self.size -= 8
             self.flush()
             self.center = False
+        pass
 
     def word(self, word):
         font = get_font(self.size, self.weight, self.style)
