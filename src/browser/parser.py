@@ -44,6 +44,9 @@ class Element:
             return f"<{repr(self.tag)} {self.attributes}>"
         return f"<{self.tag}>"
 
+    def get_attribute(self, key):
+        return self.attributes.get(key, None)
+
 
 class HTMLParser:
     HEAD_TAGS = [

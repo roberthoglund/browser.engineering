@@ -108,10 +108,15 @@ class BlockLayout:
 
     def paint(self):
         cmds = []
-        if isinstance(self.node, Element) and self.node.tag == "pre":
-            x2, y2 = self.x + self.width, self.y + self.height
-            rect = DrawRect(self.x, self.y, x2, y2, "gray")
-            cmds.append(rect)
+        if isinstance(self.node, Element):
+            if self.node.tag == "pre":
+                x2, y2 = self.x + self.width, self.y + self.height
+                rect = DrawRect(self.x, self.y, x2, y2, "gray")
+                cmds.append(rect)
+            if self.node.tag == "nav" and self.node.get_attribute("class") == "links":
+                x2, y2 = self.x + self.width, self.y + self.height
+                rect = DrawRect(self.x, self.y, x2, y2, "lightgray")
+                cmds.append(rect)
         if self.layout_mode() == "inline":
             for x, y, word, font in self.display_list:
                 cmds.append(DrawText(x, y, word, font))
