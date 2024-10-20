@@ -146,6 +146,8 @@ class HTMLParser:
                 open_tags == ["html", "head"] and tag not in ["/head"] + self.HEAD_TAGS
             ):
                 self.add_tag("/head")
+            elif len(open_tags) > 1 and open_tags[-1] == "p" and tag in ["p"]:
+                self.add_tag("/p")
             else:
                 break
 

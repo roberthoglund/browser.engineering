@@ -1,6 +1,6 @@
 import unittest
 
-from browser.parser import HTMLParser
+from browser.parser import HTMLParser, print_tree
 
 
 def find_tag(tree, tag):
@@ -19,6 +19,11 @@ class MyTestCase(unittest.TestCase):
         meta = find_tag(tree, "meta")
         content = meta.attributes["content"]
         self.assertEqual(content, "dark light")
+
+    def test_nested_paragraphs(self):
+        tree = HTMLParser("<p>hello<p>world</p>").parse()
+        body = find_tag(tree, "body")
+        self.assertEqual(len(body.children), 2)
 
 
 if __name__ == "__main__":
