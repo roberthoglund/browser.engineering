@@ -1,4 +1,5 @@
 import tkinter
+from shutil import which
 
 from browser.lex import Text
 
@@ -26,6 +27,7 @@ class Layout:
         self.style = "roman"
         self.size = 12
         self.width = width
+        self.center = False
 
         for tok in tokens:
             self.token(tok)
@@ -56,24 +58,41 @@ class Layout:
             self.cursor_y += V_STEP
         elif tok.tag == "br":
             self.flush()
+        elif tok.tag.startswith("h1"):
+            self.flush()
+            if 'class="title"' in tok.tag:
+                self.center = True
+            self.size += 8
+        elif tok.tag == "/h1":
+            self.size -= 8
+            self.flush()
+            self.center = False
 
     def word(self, word):
         font = get_font(self.size, self.weight, self.style)
         w = font.measure(word)
         if self.cursor_x + w > self.width - H_STEP:
             self.flush()
-        self.line.append((self.cursor_x, word, font))
+        self.line.append((self.cursor_x, word, font, w))
         self.cursor_x += w + font.measure(" ")
 
     def flush(self):
         if not self.line:
             return
 
-        metrics = [font.metrics() for x, word, font in self.line]
+        metrics = [font.metrics() for x, word, font, w in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y + 1.25 + max_ascent
 
-        for x, word, font in self.line:
+        if self.center:
+            min_x = min([x for x, word, font, w in self.line])
+            max_x = max([x + w for x, word, font, w in self.line])
+            left_offset = (self.width - (max_x - min_x)) // 2
+            for i in range(len(self.line)):
+                x, word, font, w = self.line[i]
+                self.line[i] = (x + left_offset, word, font, w)
+
+        for x, word, font, w in self.line:
             y = baseline - font.metrics("ascent")
             self.display_list.append((x, y, word, font))
 
