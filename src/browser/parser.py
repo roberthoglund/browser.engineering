@@ -40,6 +40,8 @@ class Element:
         self.parent = parent
 
     def __repr__(self):
+        if self.attributes:
+            return f"<{self.tag} {self.attributes}>"
         return f"<{self.tag}>"
 
 
@@ -157,16 +159,39 @@ class HTMLParser:
         return self.unfinished.pop()
 
     def get_attributes(self, text):
-        parts = text.split()
-        tag = parts[0].casefold()
-        attributes = {}
-        for attrpair in parts[1:]:
-            if "=" in attrpair:
-                key, value = attrpair.split("=", 1)
-                if len(value) > 2 and value[0] in ["'", '"']:
-                    value = value[1:-1]
-                attributes[key.casefold()] = value
-            else:
-                attributes[attrpair.casefold()] = ""
-            pass
+        if text.endswith("/"):
+            text = text[:-1]
+        if " " not in text:
+            return text, {}
+
+        tag, rest = text.split(" ", 1)
+        tag = tag.casefold()
+        self.attribute_lexer(rest)
+        attributes = self.attribute_lexer(rest)
         return tag, attributes
+
+    def attribute_lexer(self, text):
+        value = ""
+        key = ""
+        in_string = False
+        in_value = False
+        attributes = {}
+        for c in text:
+            if c == '"':
+                in_string = not in_string
+            elif c == "=" and not in_string:
+                in_value = True
+            elif c.isspace() and not in_string:
+                if key:
+                    attributes[key.casefold()] = value
+                    key = None
+                    value = ""
+            elif in_value:
+                value += c
+            else:
+                key += c
+
+        if key:
+            attributes[key.casefold()] = value
+
+        return attributes

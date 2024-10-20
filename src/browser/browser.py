@@ -45,7 +45,6 @@ class Browser:
     def load(self, url: URL):
         body = url.request()
         self.nodes = HTMLParser(body).parse()
-        # print_tree(self.nodes)
         self.update()
 
     def update(self):
