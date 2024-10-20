@@ -41,7 +41,7 @@ class Element:
 
     def __repr__(self):
         if self.attributes:
-            return f"<{self.tag} {self.attributes}>"
+            return f"<{repr(self.tag)} {self.attributes}>"
         return f"<{self.tag}>"
 
 
@@ -163,16 +163,16 @@ class HTMLParser:
     def get_attributes(self, text):
         if text.endswith("/"):
             text = text[:-1]
-        if " " not in text:
+        if not any(c.isspace() for c in text):
             return text, {}
 
-        tag, rest = text.split(" ", 1)
-        tag = tag.casefold()
+        tag, rest = text.split(maxsplit=1)
+        tag = tag.casefold().strip()
         self.attribute_lexer(rest)
         attributes = self.attribute_lexer(rest)
         return tag, attributes
 
-    def attribute_lexer(self, text):
+    def attribute_lexer(self, text: str):
         value = ""
         key = ""
         in_string = False
