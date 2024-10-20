@@ -17,6 +17,7 @@ class MyTestCase(unittest.TestCase):
     def test_quoted_attributes(self):
         tree = HTMLParser('<meta content="dark light"/>').parse()
         meta = find_tag(tree, "meta")
+        print(meta)
         content = meta.attributes["content"]
         self.assertEqual(content, "dark light")
 

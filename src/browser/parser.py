@@ -186,8 +186,9 @@ class HTMLParser:
             elif c.isspace() and not in_string:
                 if key:
                     attributes[key.casefold()] = value
-                    key = None
+                    key = ""
                     value = ""
+                    in_value = False
             elif in_value:
                 value += c
             else:
