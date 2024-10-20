@@ -26,6 +26,11 @@ def lex(body: str, view_source: bool = False):
     entities = {
         "&lt;": "<",
         "&gt;": ">",
+        "&quot;": '"',
+        "&amp;": "&",
+        "&ndash;": "–",
+        "&copy;": "©",
+        "&#39;": "'",
     }
     for c in body:
         if c == "<":
@@ -43,8 +48,10 @@ def lex(body: str, view_source: bool = False):
             elif entity:
                 entity += c
                 if c == ";":
-                    entity = entities.get(entity, entity)
-                    buffer += entity
+                    mapped_entity = entities.get(entity, entity)
+                    if mapped_entity == entity:
+                        print(f"Unknown entity {entity}")
+                    buffer += mapped_entity
                     entity = None
             else:
                 buffer += c
