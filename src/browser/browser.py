@@ -1,12 +1,12 @@
 import tkinter
+import tkinter.font
 from tkinter import BOTH
 
-from .layout import layout
+from .layout import Layout, V_STEP
 from .lex import lex
 from .url import URL
 
 WIDTH, HEIGHT = 800, 600
-H_STEP, V_STEP = 13, 18
 SCROLL_STEP = 100
 
 
@@ -16,7 +16,7 @@ class Browser:
         self.width = WIDTH
         self.height = HEIGHT
 
-        self.text = None
+        self.tokens = []
         self.display_list = []
 
         self.window = tkinter.Tk()
@@ -44,23 +44,23 @@ class Browser:
 
     def load(self, url: URL):
         body = url.request()
-        self.text = lex(body, url.view_source)
+        self.tokens = lex(body, url.view_source)
         self.update()
 
     def update(self):
-        self.display_list = layout(
-            self.text, h_step=H_STEP, v_step=V_STEP, width=self.width
-        )
+        self.display_list = Layout(self.tokens, self.width).display_list
         self.draw()
 
     def draw(self):
         self.canvas.delete("all")
-        for x, y, c in self.display_list:
+        for x, y, word, font in self.display_list:
             if y > self.scroll + self.height:
                 continue
             if y + V_STEP < self.scroll:
                 continue
-            self.canvas.create_text(x, y - self.scroll, text=c)
+            self.canvas.create_text(
+                x, y - self.scroll, text=word, font=font, anchor="nw"
+            )
 
     def scrolldown(self, e):
         self.scroll += SCROLL_STEP
