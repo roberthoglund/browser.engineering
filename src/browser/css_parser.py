@@ -1,5 +1,3 @@
-from lib2to3.pgen2.grammar import opmap
-
 from browser.parser import Element
 
 
@@ -30,7 +28,7 @@ class CSSParser:
 
     def body(self):
         pairs = {}
-        while self.i < len(self.s):
+        while self.i < len(self.s) and self.s[self.i] != "}":
             try:
                 prop, val = self.pair()
                 pairs[prop] = val

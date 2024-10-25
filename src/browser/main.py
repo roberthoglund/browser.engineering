@@ -1,8 +1,16 @@
 import importlib.metadata
 import tkinter
+import logging
 
 from .browser import Browser
 from .url import URL
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def get_version():
@@ -16,7 +24,10 @@ def get_version():
 def start():
     import sys
 
-    Browser().load(URL(sys.argv[1], version=get_version()))
+    url = URL(sys.argv[1], version=get_version())
+    logging.info(f"Starting browser with URL: {url}")
+
+    Browser().load(url)
     tkinter.mainloop()
 
 

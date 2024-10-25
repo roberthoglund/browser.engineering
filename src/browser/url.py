@@ -1,3 +1,6 @@
+import logging
+
+
 class URL:
     def __init__(self, url: str, version: str):
         self.version = version
@@ -76,13 +79,13 @@ class URL:
             request += f"{header}: {value}\r\n"
         request += "\r\n"
 
-        print(request)
+        logging.debug(f"URL request:\n{request}")
 
         s.send(request.encode("utf8"))
 
         response = s.makefile("r", encoding="utf8", newline="\r\n")
-        statusline = response.readline()
-        version, status, explanation = statusline.split(" ", 2)
+        _status_line = response.readline()
+        # version, status, explanation = status_line.split(" ", 2)
 
         response_headers = {}
         while True:

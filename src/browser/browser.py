@@ -4,7 +4,7 @@ from tkinter import BOTH
 
 from .css_parser import CSSParser
 from .layout import DocumentLayout, V_STEP
-from .parser import HTMLParser, print_tree, Element
+from .parser import HTMLParser, Element
 from .url import URL
 
 WIDTH, HEIGHT = 800, 600
@@ -22,15 +22,16 @@ def paint_tree(layout_object, display_list):
 
 def style(node, rules):
     node.style = {}
-    if isinstance(node, Element) and "style" in node.attributes:
-        pairs = CSSParser(node.attributes["style"]).body()
-        for prop, val in pairs.items():
-            node.style[prop] = val
 
     for selector, body in rules:
         if not selector.matches(node):
             continue
         for prop, val in body.items():
+            node.style[prop] = val
+
+    if isinstance(node, Element) and "style" in node.attributes:
+        pairs = CSSParser(node.attributes["style"]).body()
+        for prop, val in pairs.items():
             node.style[prop] = val
 
     for child in node.children:
@@ -52,11 +53,11 @@ class Browser:
         self.canvas = tkinter.Canvas(self.window, width=self.width, height=self.height)
         self.canvas.pack(fill=BOTH, expand=1)
 
-        self.window.bind("<Down>", self.scrolldown)
-        self.window.bind("<Up>", self.scrollup)
+        self.window.bind("<Down>", self.scroll_down)
+        self.window.bind("<Up>", self.scroll_up)
         # TODO: Add support for <Mousewheel> on MacOS
-        self.window.bind("<Button-4>", self.scrolldown)
-        self.window.bind("<Button-5>", self.scrollup)
+        self.window.bind("<Button-4>", self.scroll_down)
+        self.window.bind("<Button-5>", self.scroll_up)
 
         self.window.bind("<Configure>", self.configure)
 
@@ -93,11 +94,11 @@ class Browser:
                 continue
             cmd.execute(self.scroll, self.canvas)
 
-    def scrolldown(self, e):
+    def scroll_down(self, _e):
         max_y = max(self.document.height + 2 * V_STEP - self.height, 0)
         self.scroll = min(self.scroll + SCROLL_STEP, max_y)
         self.draw()
 
-    def scrollup(self, e):
+    def scroll_up(self, _e):
         self.scroll = max(0, self.scroll - SCROLL_STEP)
         self.draw()
