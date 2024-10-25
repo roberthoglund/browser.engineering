@@ -2,12 +2,15 @@ import tkinter
 import tkinter.font
 from tkinter import BOTH
 
+from .css_parser import CSSParser
 from .layout import DocumentLayout, V_STEP
-from .parser import HTMLParser, print_tree
+from .parser import HTMLParser, print_tree, Element
 from .url import URL
 
 WIDTH, HEIGHT = 800, 600
 SCROLL_STEP = 100
+
+DEFAULT_STYLE_SHEET = CSSParser("pre { background-color: gray; }").parse()
 
 
 def paint_tree(layout_object, display_list):
@@ -15,6 +18,23 @@ def paint_tree(layout_object, display_list):
 
     for child in layout_object.children:
         paint_tree(child, display_list)
+
+
+def style(node, rules):
+    node.style = {}
+    if isinstance(node, Element) and "style" in node.attributes:
+        pairs = CSSParser(node.attributes["style"]).body()
+        for prop, val in pairs.items():
+            node.style[prop] = val
+
+    for selector, body in rules:
+        if not selector.matches(node):
+            continue
+        for prop, val in body.items():
+            node.style[prop] = val
+
+    for child in node.children:
+        style(child, rules)
 
 
 class Browser:
@@ -53,6 +73,8 @@ class Browser:
     def load(self, url: URL):
         body = url.request()
         self.nodes = HTMLParser(body).parse()
+        rules = DEFAULT_STYLE_SHEET.copy()
+        style(self.nodes, rules)
         self.update()
 
     def update(self):
