@@ -37,6 +37,21 @@ class URL:
     def __str__(self):
         return f"{self.scheme}://{self.host}{self.path}"
 
+    def resolve(self, url):
+        if "://" in url:
+            return URL(url, self.version)
+        if not url.startswith("/"):
+            dir, _ = self.path.rsplit("/", 1)
+            while url.startswith("../"):
+                _, url = url.split("/", 1)
+                if "/" in dir:
+                    dir, _ = dir.rsplit("/", 1)
+            url = dir + "/" + url
+        if url.startswith("//"):
+            return URL(f"{self.scheme}:{url}", self.version)
+        else:
+            return URL(f"{self.scheme}://{self.host}{url}", self.version)
+
     def request(self, headers=None) -> str:
         if self.scheme == "file":
             return self._file_request()

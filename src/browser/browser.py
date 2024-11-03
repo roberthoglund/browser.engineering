@@ -1,16 +1,17 @@
+import logging
 import tkinter
 import tkinter.font
 from tkinter import BOTH
 
-from .css_parser import CSSParser
+from .css_parser import CSSParser, cascade_priority, style
 from .layout import DocumentLayout, V_STEP
-from .parser import HTMLParser, Element
+from .parser import HTMLParser, Element, print_tree
 from .url import URL
 
 WIDTH, HEIGHT = 800, 600
 SCROLL_STEP = 100
 
-DEFAULT_STYLE_SHEET = CSSParser("pre { background-color: gray; }").parse()
+DEFAULT_STYLE_SHEET = CSSParser(open("browser.css").read()).parse()
 
 
 def paint_tree(layout_object, display_list):
@@ -20,22 +21,11 @@ def paint_tree(layout_object, display_list):
         paint_tree(child, display_list)
 
 
-def style(node, rules):
-    node.style = {}
-
-    for selector, body in rules:
-        if not selector.matches(node):
-            continue
-        for prop, val in body.items():
-            node.style[prop] = val
-
-    if isinstance(node, Element) and "style" in node.attributes:
-        pairs = CSSParser(node.attributes["style"]).body()
-        for prop, val in pairs.items():
-            node.style[prop] = val
-
-    for child in node.children:
-        style(child, rules)
+def tree_to_list(tree, list):
+    list.append(tree)
+    for child in tree.children:
+        tree_to_list(child, list)
+    return list
 
 
 class Browser:
@@ -46,11 +36,14 @@ class Browser:
 
         self.nodes = None
         self.document = None
+        self.rules = None
         self.display_list = []
 
         self.window = tkinter.Tk()
 
-        self.canvas = tkinter.Canvas(self.window, width=self.width, height=self.height)
+        self.canvas = tkinter.Canvas(
+            self.window, width=self.width, height=self.height, bg="white"
+        )
         self.canvas.pack(fill=BOTH, expand=1)
 
         self.window.bind("<Down>", self.scroll_down)
@@ -58,6 +51,10 @@ class Browser:
         # TODO: Add support for <Mousewheel> on MacOS
         self.window.bind("<Button-4>", self.scroll_down)
         self.window.bind("<Button-5>", self.scroll_up)
+
+        self.window.bind("<Control-d>", self.dump_dom)
+        self.window.bind("<Control-l>", self.dump_layout_tree)
+        self.window.bind("<Control-s>", self.dump_style_sheet)
 
         self.window.bind("<Configure>", self.configure)
 
@@ -74,8 +71,30 @@ class Browser:
     def load(self, url: URL):
         body = url.request()
         self.nodes = HTMLParser(body).parse()
-        rules = DEFAULT_STYLE_SHEET.copy()
-        style(self.nodes, rules)
+
+        self.rules = DEFAULT_STYLE_SHEET.copy()
+
+        links = [
+            node.attributes["href"]
+            for node in tree_to_list(self.nodes, [])
+            if isinstance(node, Element)
+            and node.tag == "link"
+            and node.attributes.get("rel") == "stylesheet"
+            and "href" in node.attributes
+        ]
+        for link in links:
+            style_url = url.resolve(link)
+            try:
+                logging.debug(f"Loading stylesheet: {style_url}")
+                style_sheet = style_url.request()
+            except:
+                logging.error(f"Failed to load stylesheet: {style_url}")
+                continue
+            self.rules.extend(CSSParser(style_sheet).parse())
+
+        self.rules = sorted(self.rules, key=cascade_priority)
+
+        style(self.nodes, self.rules)
         self.update()
 
     def update(self):
@@ -102,3 +121,13 @@ class Browser:
     def scroll_up(self, _e):
         self.scroll = max(0, self.scroll - SCROLL_STEP)
         self.draw()
+
+    def dump_dom(self, _e):
+        print_tree(self.nodes)
+
+    def dump_layout_tree(self, _e):
+        print_tree(self.document)
+
+    def dump_style_sheet(self, _e):
+        for rule in self.rules:
+            print(rule)

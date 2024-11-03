@@ -27,6 +27,7 @@ class Text:
         self.text = text
         self.children = []
         self.parent = parent
+        self.style = {}
 
     def __repr__(self):
         return repr(self.text)
@@ -38,11 +39,15 @@ class Element:
         self.attributes = attributes
         self.children = []
         self.parent = parent
+        self.style = {}
 
     def __repr__(self):
+        res = f"<{repr(self.tag)}>"
         if self.attributes:
-            return f"<{repr(self.tag)} {self.attributes}>"
-        return f"<{self.tag}>"
+            res += f" attributes={self.attributes}"
+        if self.style:
+            res += f" style={self.style}"
+        return res
 
     def get_attribute(self, key):
         return self.attributes.get(key, None)
@@ -166,6 +171,7 @@ class HTMLParser:
     def get_attributes(self, text):
         if text.endswith("/"):
             text = text[:-1]
+        text = text.strip()
         if not any(c.isspace() for c in text):
             return text, {}
 
