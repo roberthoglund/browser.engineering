@@ -9,7 +9,7 @@ from .layout.document import DocumentLayout
 from .parser import HTMLParser, Element, print_tree
 from .url import URL
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 800
 SCROLL_STEP = 100
 
 DEFAULT_STYLE_SHEET = CSSParser(open("browser.css").read()).parse()
