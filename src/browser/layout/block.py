@@ -1,11 +1,6 @@
-import tkinter
-
-from browser.cmds import DrawText, DrawRect
-from browser.parser import Text, Element
-
-H_STEP, V_STEP = 13, 18
-
-FONTS = {}
+from browser.cmds import DrawRect, DrawText
+from browser.layout.font_cache import get_font
+from browser.parser import Element, Text
 
 BLOCK_ELEMENTS = [
     "html",
@@ -46,40 +41,6 @@ BLOCK_ELEMENTS = [
     "details",
     "summary",
 ]
-
-
-def get_font(size, weight, style):
-    key = (size, weight, style)
-    if key not in FONTS:
-        font = tkinter.font.Font(size=size, weight=weight, slant=style)
-        label = tkinter.Label(font=font)
-        FONTS[key] = (font, label)
-    return FONTS[key][0]
-
-
-class DocumentLayout:
-    def __init__(self, node, total_width: int):
-        self.node = node
-        self.total_width = total_width
-        self.parent = None
-        self.children = []
-
-        self.x = None
-        self.y = None
-        self.width = None
-        self.height = None
-
-    def layout(self):
-        child = BlockLayout(self.node, self, None)
-        self.children.append(child)
-        self.width = self.total_width - 2 * H_STEP
-        self.x = H_STEP
-        self.y = V_STEP
-        child.layout()
-        self.height = child.height
-
-    def paint(self):
-        return []
 
 
 class BlockLayout:

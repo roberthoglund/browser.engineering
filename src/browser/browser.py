@@ -4,7 +4,8 @@ import tkinter.font
 from tkinter import BOTH
 
 from .css_parser import CSSParser, cascade_priority, style
-from .layout import DocumentLayout, V_STEP
+from .layout import V_STEP
+from .layout.document import DocumentLayout
 from .parser import HTMLParser, Element, print_tree
 from .url import URL
 
